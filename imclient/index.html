@@ -1,0 +1,348 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+	<title></title>
+	<script src="js/jquery.min.js"></script>
+	<script src="js/core.js" ></script>
+	<link rel="stylesheet" href="style/index.css" media="all" />
+	<script type="text/javascript">
+
+		$(document).ready(function(){
+			/*webSocket*/
+			Im = new SocketIm('ws://localhost:3368');
+			ws=Im.instance();
+			window.onunload=function(){
+				Im.sendClose();
+			}
+			ws.onopen=function(evt){
+
+			}
+			ws.onmessage=function(evt){
+				var data=evt.data;
+				var dic=data.split('_');
+				var cmd=dic[0];
+				if(cmd == '@'){
+					$('.list').css({display:'block'});
+					json=JSON.parse(dic[2]);
+					userInfo=new UserInfo(json.name,json.uid,json.gid,json.friend);
+					//构建好友列表
+					var friends=json.friend;
+					IMView.friendList(friends);
+
+					//弹出对话框
+					$(".lk").click(function(evt){
+						evt.stopPropagation();
+						var id=$(evt.target).attr('name');
+						//alert($(evt.target).attr('name'));
+						IMView.mainMsgDialog(id,evt);
+
+						//对话框标题
+						$("#kill"+id+" #ming").html($(evt.target).children(".name").html());
+						//对话框头像
+						$("#kill"+id+" .chuankou").attr("src",$(evt.target).children("img").attr('src'));
+					});
+
+				}else if(cmd == '<'){
+
+				}else if(cmd == '>') {
+					var name=dic[1];
+					var msg=dic[2];
+					var tim=dic[3];
+					var uid=dic[4];
+					var id=uid;
+					//创建窗口
+					IMView.mainMsgDialog(id);
+					//对话框标题
+					$("#kill" + id+" .ming").html(name);
+					var flist=userInfo.getFriend();
+					var avater;
+					for(var i=0;i<flist.length;i++)
+					{
+						if(flist[i].uid == id)
+						{
+							avater=flist[i].avater;
+						}
+					}
+					$("#kill"+id+" .chuankou").attr("src",avater);
+					//---------华丽分割线----------
+
+					//添加消息
+					IMView.addMsgs(uid,name,tim,msg);
+				}else if(cmd == '&') {
+					//登录信息反馈
+					if(dic[1]=='0'){
+						alert('用户登录异常,原因：1.用户已登录 2.系统异常');
+					}else{
+						$('.denglu').css({display:'none'});
+					}
+
+				}else if(cmd=='$'){
+					var flist=JSON.parse(dic[2]);
+					$('#search_list').css({display:'block'});
+					for(var i=0;i<flist.length;i++)
+					{
+						var li='<a href="javascript:;"><div class="lk1"><img src="images/toux.jpg" alt="" class="toux-img">'+
+								'<span class="name">'+flist[i].name+'</span>'+
+								'<div class="jiahao1"><img src="images/qita2.png" uid="'+flist[i].uid+'" name="'+flist[i].name+'" alt="" class="jiah1"></div></div></a>';
+						$('#search_list ').append(li);
+					}
+					$('#search_list .jiahao1 img').click(function(evt){
+						evt.stopPropagation();
+						Im.sendAddFriend($(evt.target).attr('uid'),$(evt.target).attr('name'));
+					})
+				}else if(cmd=='!'){
+					var fri=JSON.parse(dic[1]);
+					if(fri.stat == '0'){
+						alert('添加好友成功！！');
+						IMView.addFriendList(fri);
+					}else if (fri.stat == '1'){
+						alert('添加失败。:已有好友!');
+					}
+					else if(fri.stat == '2'){
+						alert('添加失败。:系统出错!');
+					}else if (fri.stat == '3'){
+						alert('添加失败。:不能添加自己为好友!');
+					}
+					$('#search_list').css({display:'none'});
+					$('#search_list ul').html('');
+				}else{
+
+				}
+
+			}
+			ws.onclose=function(evt){
+
+			}
+			ws.onerror=function(evt){
+				alert(1)
+			}
+			//login
+			$('#login .lsubmit').click(function(){
+					var name=$('#login .lname').val();
+					var pass=$('#login .lpass').val();
+					Im.sendLogin(name,pass);
+			})
+			//搜索
+			$('#search .sousuo').click(function(){
+				var sval=$('#search .input').val();
+				Im.sendSearch(sval);
+			})
+
+			$(".tit").click(function(){
+				$(this).next("div").stop().slideToggle("slow").siblings(".tit-neir:visible").slideUp("slow");
+			})
+			$(".tit1").click(function(){
+				$(this).next("div").stop().slideToggle("slow").siblings(".tit-neir:visible").slideUp("slow");
+			})
+			var a=true;
+			$(".tit").click(function(){
+				if( a == true ){
+					$(".img_1").addClass("img-2");
+					$(".img_1").removeClass("img_1");
+					a = false;
+				}else{
+					$(".img-2").addClass("img_1");
+					$(".img-2").removeClass("img-2");
+					a = true;
+				}
+			})
+			var a=true;
+			$(".tit1").click(function(){
+				if( a==true ){
+					$(".img_2").addClass("img-3");
+					$(".img_2").removeClass("img_2");
+					a = false;
+				}else{
+					$(".img-3").addClass("img_2");
+					$(".img-3").removeClass("img-3");
+					a = true;
+				}
+			})
+			
+			$("li").click(function(){
+
+			})
+
+			//$(".xqnr .namei:last").css("padding-bottom","10px");
+			//$(".gk img:first").css("margin-left","5px");
+
+
+			$(".tup ").click (function(){
+				 $(".tp").stop().fadeToggle("slow");
+			});
+			$(".liuyan ").click (function(){
+				 $(".liuy").stop().fadeToggle("slow");
+			});
+			$(".ewm ").click (function(){
+				 $(".erweima").stop().fadeToggle("slow");
+			});
+			$(".qita1 ").click (function(){
+				 $(".qt1").stop().fadeToggle("slow");
+			});
+			$(".qita2 ").click (function(){
+				 $(".qt2").stop().fadeToggle("slow");
+			});
+			$(".chat-img").click(function(){
+				$(".liebiao").stop().fadeToggle("slow");
+			})
+		})
+	</script>
+</head>
+<body>
+	<div class="main">
+		<!--
+		<div class="login" id="login">
+			<input type="text" class="lname" />
+			<input type="password" class="lpass" />
+			<input type="submit" class="lsubmit" value="登录" />
+		</div>-->
+		<div class="denglu">
+			<h3>IM</h3>
+			<div class="ou" id="login">
+				<input type="text" class="username lname" placeholder="用户名"/>
+				<input type="password" class="password lpass" placeholder="密码"/>
+				<input type="submit" value="登陆" class="bt lsubmit"/>
+				<input type="button" value="注册" class="bt1"/>
+			</div>
+		</div>
+		<div class="neir" id="wincopy" style="display: none">
+			<div class="nr">
+				<div class="lop">
+					<div class="names">
+						<img src="images/chuankou.jpg" alt="" class="chuankou"/>
+						<span class="ming" id="ming">人生如只如初见</span>
+						<span class="delete">×</span>
+					</div>
+					<div class="xqnr">
+						<div class="chankan"><a href="javascript:void(0);">查看更多聊天记录</a></div>
+
+					</div>
+					<div class="duihua">
+						<div class="duihua-s">
+							<div id="say" class="textarea" contenteditable="true" >
+
+							</div>
+						</div>
+						<div class="duihua-x">
+							<div class="gk">
+								<div class="bq">
+									<!--
+									bq['wx']='images/biaoq/wx.png';
+									bq['pz']='images/biaoq/pz.png';
+									bq['se']='images/biaoq/se.png';
+									bq['cy']='images/biaoq/cy.png';
+									bq['dk']='images/biaoq/dk.png';
+									bq['dy']='images/biaoq/dy.png';
+									bq['fd']='images/biaoq/fd.png';
+									bq['fn']='images/biaoq/fn.png';
+									bq['gg']='images/biaoq/gg.png';
+									bq['hx']='images/biaoq/hx.png';
+									bq['jy']='images/biaoq/jy.png';
+									bq['ll']='images/biaoq/ll.png';
+									bq['shui']='images/biaoq/jy.png';
+									bq['tp']='images/biaoq/tp.png';
+									-->
+									<div class="group">
+										<ul>
+											<li class="bqs"><img src="images/biaoq/wx.png" data="wx"  alt=""/></li>
+											<li class="bqs"><img src="images/biaoq/pz.png" data="pz" alt=""/></li>
+											<li class="bqs"><img src="images/biaoq/se.png" data="se" alt=""/></li>
+											<li class="bqs"><img src="images/biaoq/bz.png" data="bz" alt=""/></li>
+											<li class="bqs"><img src="images/biaoq/cy.png" data="cy" alt=""/></li>
+											<li class="bqs"><img src="images/biaoq/dk.png" data="dk" alt=""/></li>
+											<li class="bqs"><img src="images/biaoq/dy.png" data="dy" alt=""/></li>
+											<li class="bqs"><img src="images/biaoq/fd.png" data="fd" alt=""/></li>
+											<li class="bqs"><img src="images/biaoq/fn.png" data="fn" alt=""/></li>
+											<li class="bqs"><img src="images/biaoq/gg.png" data="gg" alt=""/></li>
+											<li class="bqs"><img src="images/biaoq/hx.png" data="hx" alt=""/></li>
+											<li class="bqs"><img src="images/biaoq/jy.png" data="jy" alt=""/></li>
+											<li class="bqs"><img src="images/biaoq/ll.png" data="ll" alt=""/></li>
+											<li class="bqs"><img src="images/biaoq/shui.png" data="shui" alt=""/></li>
+											<li class="bqs"><img src="images/biaoq/tp.png" data="tp" alt=""/></li>
+										</ul>
+									</div>
+								</div>
+								<img src="images/biaoq.png"  alt="" title="选择表情"  class="biaoq"/>
+								<div class="tp"></div>
+								<img src="images/tup.png"    alt="" title="发送图片"  class="tup"/>
+								<div class="liuy"></div>
+								<img src="images/liuyan.png" alt="" title="留言"      class="liuyan"/>
+								<div class="erweima"></div>
+								<img src="images/ewm.png"    alt="" title="二维码"    class="ewm"/>
+								<div class="qt1"></div>
+								<img src="images/qita1.png"  alt="" title="其他"      class="qita1"/>
+								<div class="qt2"></div>
+								<img src="images/qita2.png"  alt="" title="其他"      class="qita2"/>
+							</div>
+							<div class="massage"><a href="javascript:void(0);" class="fasong">发送留言</a></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+
+
+		<div class="list" style="display: none">
+			<div class="listi">
+				<div class="chat">
+					<div class="li"></div>
+					<div class="tools">
+						<div class="chat-tool"><span>在线聊天工具</span></div>
+						<img src="images/chat2.jpg" alt="" class="chat-img"/>
+						<div class="liebiao"></div>
+					</div>
+				</div>
+
+				<div class="lieb">
+					<div class="tit">
+						<div class="img_1"></div>
+						<span style="float:left;color:#717171;margin-left:6px;">最近联系人&nbsp;(5/9)</span>
+					</div>
+					<div class="tit-neir">
+						<ul>
+							<li>
+							<a href="javascript:void(0);">
+								<div class="lk" name="0">
+									<img src="images/toux.jpg" alt="" class="toux-img"/>
+									<span class="name">删除记忆</span>
+									<div class="dz"><img src="images/dizhi.png" alt="" class="dizhi"/></div>
+								</div>
+							</a>
+							</li>
+						</ul>
+					</div>
+					<div class="tit1">
+						<div class="img_2"></div>
+						<span style="float:left;color:#717171;margin-left:6px;" id="friends_avg">我的好友&nbsp;</span>
+					</div>
+					<div class="tit-neir">
+						<ul id="friends">
+
+						</ul>
+					</div>
+					
+				</div>
+				
+				<div class="dibu">
+
+					<div class="sous" id="search">
+
+						<img src="images/sousuo.png" alt="" class="sousuo"/>
+						<input type="text" class="input" placeholder="查找联系人"/>
+						<img src="images/yuyin.png" alt="" class="yuyin"/>
+					</div>
+					<div class="sz"><img src="images/shezhi.png" alt="" class="shezhi"/></div>
+				</div>
+			</div>
+		</div>
+		<div class="tianjia1" id="search_list">
+			<div class="add"><span>添加好友</span></div>
+
+		</div>
+	</div>
+
+</body>
+</html>
