@@ -12,3 +12,5 @@
 #效果展示：
 #### ![image](https://github.com/348052148/webIM/raw/master/zhans.png)
 #### ![image](https://github.com/348052148/webIM/raw/master/zhans1.png)
+
+#### 欢迎大家对本项目进行开发。邮箱: msbox@live.cn  
